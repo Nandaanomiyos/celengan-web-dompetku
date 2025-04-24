@@ -8,4 +8,4 @@ Aplikasi pengatur keuangan berbasis web untuk mencatat pemasukan dan pengeluaran
 - Tampilan responsif untuk HP
 
 ## Demo
-[Klik di sini untuk mencoba](https://username.github.io/celengan-web-dompetku/)
+[Klik di sini untuk mencoba](https://nandaanomiyos.github.io/celengan-web-dompetku/celengan%20web-app%20pengatur-keuangan.html)
