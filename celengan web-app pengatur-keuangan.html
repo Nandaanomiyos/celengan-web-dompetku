@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dompetku</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      background: #121212;
+      color: #f2f2f2;
+      font-family: 'Segoe UI', sans-serif;
+      overflow-x: hidden; /* Ini penting biar nggak bisa geser kanan-kiri */
+    }
+
+    header {
+      background: #1976d2;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 22px;
+      width: 100vw; /* Pakai 100vw biar full sampai pinggir */
+    }
+
+    .balance-box {
+      display: flex;
+      justify-content: space-around;
+      background: #2196f3;
+      color: white;
+      padding: 15px 0;
+      font-size: 16px;
+      width: 100vw; /* Full juga */
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+      animation: fadeIn 1s forwards;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      background: #333;
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    input:focus, select:focus {
+      background: #444;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      font-size: 16px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0d47a1;
+    }
+
+    button.reset {
+      background: #f44336;
+    }
+
+    .transaksi-item {
+      background: #2c2c2c;
+      margin-top: 10px;
+      padding: 12px;
+      border-left: 5px solid #2196f3;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .transaksi-item.keluar {
+      border-left-color: #f44336;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <header>Dompetku</header>
+  <div class="balance-box">
+    <div>Saldo: Rp <span id="saldo">0</span></div>
+    <div>Masuk: Rp <span id="masuk">0</span></div>
+    <div>Keluar: Rp <span id="keluar">0</span></div>
+  </div>
+  <div class="container">
+    <input type="text" id="namaTransaksi" placeholder="Nama Transaksi" />
+    <input type="text" id="jumlah" placeholder="Jumlah" />
+    <select id="tipe">
+      <option value="masuk">Pemasukan</option>
+      <option value="keluar">Pengeluaran</option>
+    </select>
+    <button onclick="tambahTransaksi()">Tambah</button>
+    <button class="reset" onclick="resetTransaksi()">Reset Transaksi</button>
+    <div id="daftarTransaksi"></div>
+  </div>
+
+  <script>
+    let data = JSON.parse(localStorage.getItem("data")) || [];
+    const namaTerakhir = localStorage.getItem("namaTerakhir");
+    if (namaTerakhir) document.getElementById("namaTransaksi").value = namaTerakhir;
+
+    function simpan() {
+      localStorage.setItem("data", JSON.stringify(data));
+    }
+
+    const inputJumlah = document.getElementById("jumlah");
+    inputJumlah.addEventListener("input", function() {
+      let nilai = this.value.replace(/\D/g, "");
+      this.value = formatAngka(nilai);
+    });
+
+    function formatAngka(angka) {
+      return angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function tambahTransaksi() {
+      const nama = document.getElementById("namaTransaksi").value.trim();
+      const jumlah = parseInt(document.getElementById("jumlah").value.replace(/\./g, ""));
+      const tipe = document.getElementById("tipe").value;
+      const tanggal = new Date().toLocaleDateString("id-ID");
+
+      if (!nama || isNaN(jumlah)) return alert("Isi semua data!");
+
+      data.push({ nama, jumlah, tipe, tanggal });
+      localStorage.setItem("namaTerakhir", nama);
+      simpan();
+      tampilkan();
+    }
+
+    function tampilkan() {
+      let html = "";
+      let totalMasuk = 0, totalKeluar = 0;
+
+      data.slice().reverse().forEach(item => {
+        if (item.tipe === "masuk") totalMasuk += item.jumlah;
+        else totalKeluar += item.jumlah;
+
+        html += `
+          <div class="transaksi-item ${item.tipe}">
+            <strong>${item.nama}</strong><br>
+            Rp${item.jumlah.toLocaleString("id-ID")} - ${item.tipe} <br>
+            <small>${item.tanggal}</small>
+          </div>`;
+      });
+
+      document.getElementById("daftarTransaksi").innerHTML = html;
+      document.getElementById("masuk").innerText = totalMasuk.toLocaleString("id-ID");
+      document.getElementById("keluar").innerText = totalKeluar.toLocaleString("id-ID");
+      document.getElementById("saldo").innerText = (totalMasuk - totalKeluar).toLocaleString("id-ID");
+    }
+
+    function resetTransaksi() {
+      if (confirm("Yakin hapus semua transaksi?")) {
+        data = [];
+        simpan();
+        tampilkan();
+      }
+    }
+
+    tampilkan();
+  </script>
+</body>
+  </html>
